@@ -27,7 +27,7 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
         
-        .r-btn { transition: all 0.2s; text-align: left; }
+        .r-btn { transition: all 0.2s; text-align: left; border: 2px solid #f1f5f9; }
         .r-btn:hover { border-color: #3b82f6; background-color: #eff6ff; }
         .r-btn.active-grade { background-color: #2563eb !important; color: white !important; border-color: #1e40af !important; }
         .r-btn.active-grade .desc-text { color: #bfdbfe !important; }
@@ -42,7 +42,7 @@
     <!-- LOGIN SCREEN -->
     <div id="loginScreen" class="fixed inset-0 z-[1500] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md">
         <div class="bg-white w-full max-w-md p-10 rounded-[3rem] shadow-2xl text-center border border-white/50">
-            <!-- LOGO LOGIN: Kotak Dibuat Transparan (bg-transparent, tanpa border/shadow) -->
+            <!-- LOGO LOGIN: Transparan -->
             <div class="mx-auto mb-6 w-32 h-32 bg-transparent flex items-center justify-center overflow-hidden">
                 <img src="https://github.com/racketboys-pe/abseneskulbola/blob/main/Copy%20of%20RAPAT%20SEKOLAH%20SEMESTER%202%20(1).png?raw=true" alt="Logo Login" id="loginLogoImg" class="w-full h-full object-contain" onerror="this.src='https://ui-avatars.com/api/?name=PJOK&background=fff&color=2563eb'">
             </div>
@@ -59,7 +59,7 @@
 
     <!-- UI MESSAGE BOX -->
     <div id="messageBox" class="hidden fixed inset-0 bg-black/50 z-[3000] flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center border border-slate-100">
             <h4 id="msgTitle" class="text-lg font-bold mb-2 text-slate-800">Pesan</h4>
             <p id="msgBody" class="text-slate-500 text-sm mb-6"></p>
             <button onclick="closeModal('messageBox')" class="w-full py-3 bg-blue-600 text-white rounded-2xl font-bold">Oke</button>
@@ -78,11 +78,11 @@
         </div>
     </div>
 
-    <!-- APP CONTAINER -->
+    <!-- APP CONTENT -->
     <div id="appContainer" class="hidden max-w-6xl mx-auto p-4 md:p-6 relative">
         <header class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 no-print">
             <div class="flex items-center gap-4">
-                <!-- LOGO HEADER: Kotak Dibuat Transparan (bg-transparent, tanpa border/shadow) -->
+                <!-- LOGO HEADER: Transparan -->
                 <div class="w-16 h-16 bg-transparent flex items-center justify-center overflow-hidden">
                     <img src="https://github.com/racketboys-pe/abseneskulbola/blob/main/Copy%20of%20RAPAT%20SEKOLAH%20SEMESTER%202%20(1).png?raw=true" alt="Logo Header" id="headerLogoImg" class="w-full h-full object-contain" onerror="this.src='https://ui-avatars.com/api/?name=PJOK&background=fff&color=2563eb'">
                 </div>
@@ -102,11 +102,11 @@
 
         <nav class="flex overflow-x-auto no-scrollbar border-b border-slate-200 mb-8 gap-8 text-sm font-medium text-slate-500 no-print">
             <button onclick="switchTab('dashboard')" id="nav-dashboard" class="pb-3 px-1 transition-all whitespace-nowrap font-bold">Dashboard</button>
-            <button onclick="switchTab('siswa')" id="nav-siswa" class="pb-3 px-1 transition-all whitespace-nowrap font-bold text-slate-500">Siswa</button>
-            <button onclick="switchTab('kktp')" id="nav-kktp" class="pb-3 px-1 transition-all whitespace-nowrap font-bold text-slate-500">KKTP Wizard</button>
-            <button onclick="switchTab('formatif')" id="nav-formatif" class="pb-3 px-1 transition-all whitespace-nowrap font-bold text-slate-500">Formatif</button>
-            <button onclick="switchTab('sumatif')" id="nav-sumatif" class="pb-3 px-1 transition-all whitespace-nowrap font-bold text-slate-500">Sumatif</button>
-            <button onclick="switchTab('rapor')" id="nav-rapor" class="pb-3 px-1 transition-all whitespace-nowrap font-bold text-slate-500">Rekap Nilai</button>
+            <button onclick="switchTab('siswa')" id="nav-siswa" class="pb-3 px-1 transition-all whitespace-nowrap font-bold">Siswa</button>
+            <button onclick="switchTab('kktp')" id="nav-kktp" class="pb-3 px-1 transition-all whitespace-nowrap font-bold">KKTP Wizard</button>
+            <button onclick="switchTab('formatif')" id="nav-formatif" class="pb-3 px-1 transition-all whitespace-nowrap font-bold">Formatif</button>
+            <button onclick="switchTab('sumatif')" id="nav-sumatif" class="pb-3 px-1 transition-all whitespace-nowrap font-bold">Sumatif</button>
+            <button onclick="switchTab('rapor')" id="nav-rapor" class="pb-3 px-1 transition-all whitespace-nowrap font-bold">Rekap Nilai</button>
         </nav>
 
         <main id="mainContent">
@@ -208,10 +208,9 @@
 
     <!-- MODAL: KKTP WIZARD -->
     <div id="modalKKTPWizard" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[2000] flex items-center justify-center p-4 no-print">
-        <div class="bg-white rounded-[3rem] w-full max-w-4xl p-8 md:p-12 shadow-2xl overflow-y-auto max-h-[90vh] relative custom-scrollbar">
-            <button onclick="closeModal('modalKKTPWizard')" class="absolute top-8 right-8 text-slate-300 hover:text-slate-600"><i data-lucide="x-circle"></i></button>
+        <div class="bg-white rounded-[3rem] w-full max-w-4xl p-8 md:p-12 shadow-2xl overflow-y-auto max-h-[90vh] relative custom-scrollbar border border-white/20">
+            <button onclick="closeModal('modalKKTPWizard')" class="absolute top-8 right-8 text-slate-300 hover:text-slate-600 transition-colors"><i data-lucide="x-circle"></i></button>
             
-            <!-- Wizards Progress Bar -->
             <div class="flex justify-between mb-12 max-w-xl mx-auto relative px-4">
                 <div class="absolute top-1/2 left-0 w-full h-1 bg-slate-100 -z-10 transform -translate-y-1/2"></div>
                 <div id="wiz-step-indicator-1" class="w-10 h-10 rounded-full flex items-center justify-center font-black text-sm wizard-step-active">1</div>
@@ -261,14 +260,14 @@
                 <h3 class="text-2xl font-black text-slate-800">Langkah 4: Tinjauan Akhir</h3>
                 <div id="wiz-preview-content" class="bg-slate-50 p-10 rounded-[2.5rem] border border-slate-200 text-xs overflow-y-auto max-h-[45vh] shadow-inner mb-6"></div>
                 <div class="flex flex-wrap gap-3 justify-center">
-                    <button onclick="downloadKKTPFromPreview('pdf')" class="px-6 py-3 bg-rose-600 text-white rounded-2xl font-black text-xs shadow-lg flex items-center gap-2 hover:bg-rose-700"><i data-lucide="file-text" class="w-4 h-4"></i> UNDUH PDF (A4)</button>
-                    <button onclick="downloadKKTPFromPreview('docx')" class="px-6 py-3 bg-blue-700 text-white rounded-2xl font-black text-xs shadow-lg flex items-center gap-2 hover:bg-blue-800"><i data-lucide="file-type" class="w-4 h-4"></i> UNDUH DOCX</button>
+                    <button onclick="downloadKKTPFromPreview('pdf')" class="px-6 py-3 bg-rose-600 text-white rounded-2xl font-black text-xs shadow-lg flex items-center gap-2 hover:bg-rose-700 transition-all"><i data-lucide="file-text" class="w-4 h-4"></i> UNDUH PDF (A4)</button>
+                    <button onclick="downloadKKTPFromPreview('docx')" class="px-6 py-3 bg-blue-700 text-white rounded-2xl font-black text-xs shadow-lg flex items-center gap-2 hover:bg-blue-800 transition-all"><i data-lucide="file-type" class="w-4 h-4"></i> UNDUH DOCX</button>
                 </div>
             </div>
 
             <div class="mt-10 flex justify-between gap-4">
-                <button id="wiz-btn-prev" onclick="moveWizard(-1)" class="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black">KEMBALI</button>
-                <button id="wiz-btn-next" onclick="moveWizard(1)" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg">SIMPAN KKTP</button>
+                <button id="wiz-btn-prev" onclick="moveWizard(-1)" class="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black transition-all active:scale-95">KEMBALI</button>
+                <button id="wiz-btn-next" onclick="moveWizard(1)" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg transition-all active:scale-95">SIMPAN KKTP</button>
             </div>
         </div>
     </div>
@@ -310,7 +309,7 @@
                 <input id="input-nisn" type="text" placeholder="NISN" class="w-full border-2 rounded-2xl p-4 text-sm outline-none bg-slate-50">
                 <select id="input-jk" class="w-full border-2 rounded-2xl p-4 text-sm outline-none bg-white"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select>
                 <button onclick="saveSiswa()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg">Simpan</button>
-                <button onclick="closeModal('modalSiswa')" class="w-full py-2 text-slate-400 text-xs font-bold uppercase text-center">Batal</button>
+                <button onclick="closeModal('modalSiswa')" class="w-full py-2 text-slate-400 text-xs font-bold uppercase text-center transition-colors hover:text-slate-600">Batal</button>
             </div>
         </div>
     </div>
@@ -318,14 +317,15 @@
     <!-- MODAL: PENILAIAN -->
     <div id="modalPenilaian" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[2000] flex items-center justify-center p-4">
         <div class="bg-white rounded-[3rem] w-full max-w-4xl p-10 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar border">
-            <div class="flex justify-between items-center mb-8"><h3 class="text-xl font-black">Asesmen <span id="p-type-label" class="text-blue-600 uppercase"></span></h3><button onclick="closeModal('modalPenilaian')"><i data-lucide="x" class="text-slate-300"></i></button></div>
+            <div class="flex justify-between items-center mb-8"><h3 class="text-xl font-black text-slate-800">Asesmen <span id="p-type-label" class="text-blue-600 uppercase"></span></h3><button onclick="closeModal('modalPenilaian')"><i data-lucide="x" class="text-slate-300"></i></button></div>
             <select id="p-kktp-select" onchange="syncKKTPToForm()" class="w-full p-4 border-2 rounded-2xl text-sm outline-none bg-slate-50 font-bold mb-6"></select>
-            <div class="overflow-hidden border rounded-3xl mb-8"><table class="w-full text-left text-sm"><thead class="bg-slate-50 border-b font-black text-slate-400 uppercase text-[10px]"><tr><th class="px-6 py-4">Siswa</th><th class="px-6 py-4">Capaian</th><th class="px-6 py-4">Catatan</th></tr></thead><tbody id="p-siswa-list"></tbody></table></div>
-            <button onclick="savePenilaian()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg">Simpan Nilai</button>
+            <div class="overflow-hidden border rounded-3xl mb-8"><table class="w-full text-left text-sm"><thead class="bg-slate-50 border-b font-black text-slate-400 uppercase text-[10px]"><tr><th class="px-6 py-4">Siswa</th><th class="px-6 py-4">Rubrik Capaian</th><th class="px-6 py-4">Catatan</th></tr></thead><tbody id="p-siswa-list"></tbody></table></div>
+            <button onclick="savePenilaian()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg hover:bg-blue-700 transition-all active:scale-95">Simpan Nilai Asesmen</button>
         </div>
     </div>
 
     <script>
+        // API KEY GOOGLE GEMINI
         const apiKey = "AIzaSyATNPjYf4LOAl9vuEt4fbKlHC4h6ppUikw"; 
         const CLOUD_URL = "https://script.google.com/macros/s/AKfycbzsZHt8k7A_MJnpiVAmpv41Q4E4tFf_H3A6zjhHSYenkQjoBwmHHGnpNetovElSzMWb1A/exec"; 
 
@@ -344,8 +344,8 @@
         let isSyncing = false;
         let currentType = null;
         let currentEditSiswaIdx = null;
-        let currentEditKKTPId = null;
-        const LOCAL_KEY = 'pjok_v28_final_docx_pdf';
+        let currentKKTPId = null; // ID KKTP saat ini (untuk edit atau baru)
+        const LOCAL_KEY = 'pjok_v29_stable_ai_final';
 
         function initIcons() { if (typeof lucide !== 'undefined') lucide.createIcons(); }
 
@@ -379,7 +379,7 @@
 
             if (charts.gender) charts.gender.destroy();
             const ctxG = document.getElementById('chartGender').getContext('2d');
-            charts.gender = new Chart(ctxG, { type: 'doughnut', data: { labels: ['L', 'P'], datasets: [{ data: [male, female], backgroundColor: ['#3b82f6', '#f43f5e'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%' } });
+            charts.gender = new Chart(ctxG, { type: 'doughnut', data: { labels: ['L', 'P'], datasets: [{ data: [male, female], backgroundColor: ['#3b82f6', '#f43f5e'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } } });
 
             const tests = state.sumatif[cls] || [];
             const labels = tests.map((t, i) => `AS ${i+1}`);
@@ -391,7 +391,7 @@
 
             if (charts.sumatif) charts.sumatif.destroy();
             const ctxS = document.getElementById('chartSumatif').getContext('2d');
-            charts.sumatif = new Chart(ctxS, { type: 'line', data: { labels: labels, datasets: [{ label: 'Nilai', data: avgs, borderColor: '#10b981', tension: 0.4, fill: true }] }, options: { responsive: true, maintainAspectRatio: false } });
+            charts.sumatif = new Chart(ctxS, { type: 'line', data: { labels: labels, datasets: [{ label: 'Nilai', data: avgs, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4, fill: true }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } } } });
 
             let allScores = [];
             tests.forEach(t => { for(let sid in t.scores) { const v = parseInt(t.scores[sid].val); if(!isNaN(v)) allScores.push(v); } });
@@ -401,7 +401,7 @@
 
             if (charts.classStats) charts.classStats.destroy();
             const ctxC = document.getElementById('chartClassStats').getContext('2d');
-            charts.classStats = new Chart(ctxC, { type: 'bar', data: { labels: ['Mean', 'Max', 'Min'], datasets: [{ data: [mean, max, min], backgroundColor: ['#10b981', '#8b5cf6', '#f43f5e'], borderRadius: 10 }] }, options: { responsive: true, maintainAspectRatio: false } });
+            charts.classStats = new Chart(ctxC, { type: 'bar', data: { labels: ['Mean', 'Max', 'Min'], datasets: [{ data: [mean, max, min], backgroundColor: ['#10b981', '#8b5cf6', '#f43f5e'], borderRadius: 10 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } } });
             
             document.getElementById('stat-avg-kelas').innerText = mean;
             document.getElementById('stat-max-score').innerText = max;
@@ -411,7 +411,7 @@
         function calculateDashboardStats() {
             const cls = state.activeClass;
             const siswas = state.dataSiswa[cls] || [];
-            document.getElementById('stat-total-siswa').innerText = siswas.length;
+            if(document.getElementById('stat-total-siswa')) document.getElementById('stat-total-siswa').innerText = siswas.length;
             updateDashboardCharts();
         }
 
@@ -466,8 +466,9 @@
         }
 
         function addWizLevel() {
-            const name = document.getElementById('new-level-name').value.trim();
-            if (name) { currentWizLevels.push(name); document.getElementById('new-level-name').value = ""; renderWizLevelList(); refreshCriteriaRows(); }
+            const inp = document.getElementById('new-level-name');
+            const name = inp.value.trim();
+            if (name) { currentWizLevels.push(name); inp.value = ""; renderWizLevelList(); refreshCriteriaRows(); }
         }
 
         function removeWizLevel(index) {
@@ -477,7 +478,7 @@
 
         function renderWizLevelList() {
             const cont = document.getElementById('wiz-level-list');
-            cont.innerHTML = currentWizLevels.map((lvl, i) => `<div class="flex items-center gap-1 bg-white px-3 py-1 rounded-full border shadow-sm"><span class="text-[10px] font-bold text-blue-600">${lvl}</span><button onclick="removeWizLevel(${i})" class="text-rose-300"><i data-lucide="x" class="w-3 h-3"></i></button></div>`).join('');
+            cont.innerHTML = currentWizLevels.map((lvl, i) => `<div class="flex items-center gap-1 bg-white px-3 py-1 rounded-full border shadow-sm"><span class="text-[10px] font-bold text-blue-600">${lvl}</span><button onclick="removeWizLevel(${i})" class="text-rose-300 transition-colors hover:text-rose-500"><i data-lucide="x" class="w-3 h-3"></i></button></div>`).join('');
             initIcons();
         }
 
@@ -501,28 +502,33 @@
             let extra = "";
             if(tipe === 'rubrik') {
                 const colCount = Math.min(currentWizLevels.length, 4);
-                extra = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${colCount} gap-2 mt-3">` + currentWizLevels.map(lvl => `<div class="flex flex-col gap-1"><span class="text-[8px] font-black text-slate-400 uppercase">${lvl}</span><textarea class="lvl-desc p-2 text-[9px] rounded-xl border h-14 bg-slate-50 outline-none" data-lvl="${lvl}" placeholder="Deskripsi...">${savedLevels[lvl] || ''}</textarea></div>`).join('') + `</div>`;
+                extra = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${colCount} gap-2 mt-3">` + currentWizLevels.map(lvl => `<div class="flex flex-col gap-1"><span class="text-[8px] font-black text-slate-400 uppercase">${lvl}</span><textarea class="lvl-desc p-2 text-[9px] rounded-xl border h-14 bg-slate-50 outline-none focus:border-blue-300" data-lvl="${lvl}" placeholder="Deskripsi...">${savedLevels[lvl] || ''}</textarea></div>`).join('') + `</div>`;
             } else {
                 extra = `<input type="text" class="r-desc w-full p-3 text-[10px] rounded-xl border mt-2 bg-slate-50 outline-none" placeholder="Deskripsi..." value="${savedLevels.desc || ''}">`;
             }
-            div.innerHTML = `<button onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-rose-300"><i data-lucide="x-circle" class="w-4 h-4"></i></button><input class="wiz-crit-text w-full p-2 border-b-2 border-slate-100 outline-none font-bold text-sm bg-transparent" value="${text}" placeholder="Indikator..."> ${extra}`;
+            div.innerHTML = `<button onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-rose-300 transition-colors hover:text-rose-500"><i data-lucide="x-circle" class="w-4 h-4"></i></button><input class="wiz-crit-text w-full p-2 border-b-2 border-slate-100 outline-none font-bold text-sm bg-transparent" value="${text}" placeholder="Indikator..."> ${extra}`;
             cont.appendChild(div); initIcons();
         }
 
         async function generateAIKKTPWizard() {
             const tp = document.getElementById('wiz-tp').value.trim();
             const tipe = document.getElementById('wiz-pendekatan').value;
+            if(!apiKey) return showMessage("Config Error", "API Key belum dimasukkan.");
             if(!tp) return showMessage("Pesan", "Isi TP terlebih dahulu.");
             const btn = document.getElementById('btn-ai-wiz');
+            const originalHtml = btn.innerHTML;
             btn.disabled = true; btn.innerHTML = `MENYUSUN...`;
-            const prompt = `Ahli kurikulum PJOK SD. Buat 3 indikator KKTP untuk TP: "${tp}" dengan pendekatan: "${tipe}". Tingkat: [${currentWizLevels.join(", ")}]. Format JSON murni Array objek: [{"text": "Indikator", "levels": {"${currentWizLevels.join('": "...", "')}": "..."}}].`;
+            const prompt = `Ahli kurikulum PJOK SD. Buat 3 indikator KKTP untuk TP: "${tp}" dengan pendekatan: "${tipe}". Tingkat: [${currentWizLevels.join(", ")}]. Format JSON murni Array objek tanpa teks tambahan: [{"text": "Indikator", "levels": {"${currentWizLevels.join('": "...", "')}": "..."}}].`;
             try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, { method: 'POST', body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } }) });
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
                 const result = await res.json();
-                const d = JSON.parse(result.candidates[0].content.parts[0].text);
+                if(result.error) throw new Error(result.error.message);
+                const text = result.candidates[0].content.parts[0].text;
+                const cleanJson = text.replace(/```json|```/g, "").trim();
+                const d = JSON.parse(cleanJson);
                 document.getElementById('wiz-criteria-container').innerHTML = "";
                 d.forEach(item => addWizCriteriaRow(item.text, item.levels || { desc: item.desc }));
-            } catch(e) { showMessage("AI Error", "Gagal menghubungi AI."); } finally { btn.disabled = false; btn.innerHTML = `<i data-lucide="sparkles" class="w-3 h-3"></i> AI SUGGEST`; initIcons(); }
+            } catch(e) { showMessage("AI Error", "Gagal menghubungi AI: " + e.message); } finally { btn.disabled = false; btn.innerHTML = originalHtml; initIcons(); }
         }
 
         function renderWizPreview() {
@@ -532,18 +538,16 @@
             const pnd = document.getElementById('wiz-pendekatan').value;
             let h = `<thead class="bg-slate-100"><tr><th class="p-2 border">Indikator</th>` + (pnd === 'rubrik' ? currentWizLevels.map(lvl => `<th class="p-2 border">${lvl}</th>`).join('') : `<th class="p-2 border">Detail</th>`) + `</tr></thead>`;
             let b = rows.map(r => `<tr><td class="p-2 border font-bold">${r.querySelector('.wiz-crit-text').value}</td>` + (pnd === 'rubrik' ? currentWizLevels.map(lvl => `<td class="p-2 border text-[8px]">${r.querySelector(`textarea[data-lvl="${lvl}"]`)?.value || '-'}</td>`).join('') : `<td class="p-2 border text-[9px]">${r.querySelector('.r-desc')?.value || '-'}</td>`) + `</tr>`).join('');
-            cont.innerHTML = `<div class="mb-4 text-center border-b pb-4"><p class="font-bold text-sm uppercase text-slate-800">${tp || 'Tujuan Pembelajaran'}</p></div><table class="w-full border-collapse border border-slate-200">${tableHeader}<tbody>${tableBody}</tbody></table>`;
+            cont.innerHTML = `<div class="mb-4 text-center border-b pb-4"><p class="font-bold text-sm uppercase text-slate-800">${tp || 'Tujuan Pembelajaran'}</p></div><table class="w-full border-collapse border border-slate-200">${h}<tbody>${b}</tbody></table>`;
         }
 
-        // --- DOWNLOAD FEATURES ---
         function getWizDataForExport() {
             const rows = Array.from(document.querySelectorAll('.wiz-row'));
             const tipe = document.getElementById('wiz-pendekatan').value;
             return {
                 tp: document.getElementById('wiz-tp').value,
                 cp: document.getElementById('wiz-cp').value,
-                tipe,
-                levels: currentWizLevels,
+                tipe, levels: currentWizLevels,
                 meta: { sekolah: state.settings.identity.sekolah, guru: state.settings.identity.guru, nip: state.settings.identity.nip, ks: state.settings.identity.ks, nipks: state.settings.identity.nipks, fase: document.getElementById('wiz-fase').value, semester: document.getElementById('wiz-semester').value, kelas: document.getElementById('wiz-kelas').value },
                 data: rows.map(r => ({ text: r.querySelector('.wiz-crit-text').value, levels: tipe === 'rubrik' ? currentWizLevels.reduce((acc, lvl) => { acc[lvl] = r.querySelector(`textarea[data-lvl="${lvl}"]`)?.value; return acc; }, {}) : { desc: r.querySelector('.r-desc')?.value } }))
             };
@@ -559,62 +563,44 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             const pageWidth = doc.internal.pageSize.getWidth();
-
             doc.setFontSize(14); doc.text("KRITERIA KETERCAPAIAN TUJUAN PEMBELAJARAN (KKTP)", pageWidth/2, 15, { align: 'center' });
             doc.setFontSize(10);
-            doc.text(`Satuan Pendidikan: ${kktp.meta.sekolah}`, 15, 25);
-            doc.text(`Tujuan Pembelajaran: ${kktp.tp}`, 15, 30, { maxWidth: 180 });
+            doc.text(`Sekolah: ${kktp.meta.sekolah}`, 15, 25); doc.text(`Tujuan: ${kktp.tp}`, 15, 30, { maxWidth: 180 });
             doc.text(`Kelas / Fase / Smt: ${kktp.meta.kelas} / ${kktp.meta.fase} / ${kktp.meta.semester}`, 15, 45);
-
             const tableHead = [["Indikator", ...(kktp.tipe === 'rubrik' ? kktp.levels : ["Kriteria"])]];
             const tableBody = kktp.data.map(d => [d.text, ...(kktp.tipe === 'rubrik' ? kktp.levels.map(l => d.levels[l]) : [d.levels.desc])]);
-
             doc.autoTable({ head: tableHead, body: tableBody, startY: 55, theme: 'grid', styles: { fontSize: 8 } });
-            
-            const lastY = doc.previousAutoTable.finalY + 20;
-            doc.text("Mengetahui,", 30, lastY); doc.text("Kepala Sekolah", 30, lastY+5); doc.text(kktp.meta.ks, 30, lastY+25);
-            doc.text("Guru PJOK", 150, lastY+5); doc.text(kktp.meta.guru, 150, lastY+25);
-            
-            doc.save(`KKTP_${kktp.meta.kelas}_${kktp.tp.substring(0,20)}.pdf`);
+            doc.save(`KKTP_${kktp.meta.kelas}.pdf`);
         }
 
         async function exportKKTPToDOCX(kktp) {
-            const { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, TextRun, AlignmentType, BorderStyle } = docx;
-            
+            const { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, TextRun, AlignmentType } = docx;
             const tableHeaderCells = [new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Indikator", bold: true })] })] })];
             if(kktp.tipe === 'rubrik') kktp.levels.forEach(l => tableHeaderCells.push(new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: l, bold: true })] })] })));
             else tableHeaderCells.push(new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Kriteria", bold: true })] })] }));
-
             const tableRows = [new TableRow({ children: tableHeaderCells })];
             kktp.data.forEach(d => {
                 const cells = [new TableCell({ children: [new Paragraph(d.text)] })];
-                if(kktp.tipe === 'rubrik') kktp.levels.forEach(l => cells.push(new TableCell({ children: [new Paragraph(d.levels[l])] })));
-                else cells.push(new TableCell({ children: [new Paragraph(d.levels.desc)] }));
+                if(kktp.tipe === 'rubrik') kktp.levels.forEach(l => cells.push(new TableCell({ children: [new Paragraph(d.levels[l] || "-")] })));
+                else cells.push(new TableCell({ children: [new Paragraph(d.levels.desc || "-")] }));
                 tableRows.push(new TableRow({ children: cells }));
             });
-
-            const doc = new Document({
-                sections: [{
-                    children: [
-                        new Paragraph({ children: [new TextRun({ text: "INSTRUMEN KKTP PJOK", bold: true, size: 28 })], alignment: AlignmentType.CENTER, spacing: { after: 200 } }),
-                        new Paragraph({ children: [new TextRun({ text: `Satuan Pendidikan: ${kktp.meta.sekolah}`, bold: true })] }),
-                        new Paragraph({ children: [new TextRun({ text: `Tujuan Pembelajaran: ${kktp.tp}` })], spacing: { after: 400 } }),
-                        new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows })
-                    ]
-                }]
-            });
-
-            Packer.toBlob(doc).then(blob => {
-                saveAs(blob, `KKTP_${kktp.meta.kelas}.docx`);
-            });
+            const doc = new Document({ sections: [{ children: [new Paragraph({ children: [new TextRun({ text: "INSTRUMEN KKTP PJOK", bold: true, size: 28 })], alignment: AlignmentType.CENTER }), new Paragraph(`Sekolah: ${kktp.meta.sekolah}`), new Paragraph(`TP: ${kktp.tp}`), new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows })] }] });
+            Packer.toBlob(doc).then(blob => saveAs(blob, `KKTP_${kktp.meta.kelas}.docx`));
         }
 
         function saveKKTPFromWizard() {
             const data = getWizDataForExport();
             if(!state.kktpDefinitions[state.activeClass]) state.kktpDefinitions[state.activeClass] = [];
-            state.kktpDefinitions[state.activeClass].push({ ...data, id: currentKKTPId || 'k-'+Date.now(), materi: data.tp.substring(0,45)+"..." });
+            const payload = { ...data, id: currentKKTPId || 'k-'+Date.now(), materi: data.tp.substring(0,45)+"..." };
+            if(currentKKTPId) {
+                const idx = state.kktpDefinitions[state.activeClass].findIndex(k => k.id === currentKKTPId);
+                state.kktpDefinitions[state.activeClass][idx] = payload;
+            } else {
+                state.kktpDefinitions[state.activeClass].push(payload);
+            }
             closeModal('modalKKTPWizard'); saveData(); renderCurrentTab();
-            showMessage("Berhasil", "KKTP telah diarsipkan.");
+            showMessage("Berhasil", "KKTP telah disimpan.");
         }
 
         // --- SETTINGS ---
@@ -677,8 +663,8 @@
             if(t === 'rapor') renderRaporTable();
             initIcons();
         }
-        function renderSiswaList() { const list = state.dataSiswa[state.activeClass] || []; document.getElementById('list-siswa-body').innerHTML = list.length === 0 ? `<tr><td colspan="4" class="p-10 text-center italic text-slate-300">Kosong</td></tr>` : list.map((s, i) => `<tr class="border-b transition-all hover:bg-slate-50"><td class="px-6 py-4 text-xs font-mono">${s.nisn || '-'}</td><td class="px-6 py-4 font-bold text-slate-700">${s.nama}</td><td class="px-6 py-4 text-xs">${s.jk}</td><td class="px-6 py-4 text-right flex justify-end gap-2"><button onclick="editSiswa(${i})" class="text-blue-500 p-2"><i data-lucide="edit-3"></i></button><button onclick="deleteSiswa(${i})" class="text-rose-400 p-2"><i data-lucide="trash-2"></i></button></td></tr>`).join(''); initIcons(); }
-        function renderKKTPList() { const items = state.kktpDefinitions[state.activeClass] || []; document.getElementById('kktp-list-container').innerHTML = items.length === 0 ? `<div class="col-span-full py-20 text-center text-slate-300">Kosong</div>` : items.map((k, i) => `<div class="bg-white p-8 rounded-[2rem] border-2 relative group shadow-sm transition-all hover:border-blue-200"><div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 flex gap-1"><button onclick="editKKTP('${k.id}')" class="text-blue-500 p-2"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="deleteKKTP(${i})" class="text-rose-400 p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div><p class="text-[9px] font-black text-slate-400 uppercase mb-2">${k.tipe} / ${k.target}</p><h5 class="font-bold text-sm text-slate-800">${k.materi}</h5></div>`).join(''); initIcons(); }
+        function renderSiswaList() { const list = state.dataSiswa[state.activeClass] || []; document.getElementById('list-siswa-body').innerHTML = list.length === 0 ? `<tr><td colspan="4" class="p-10 text-center italic text-slate-300">Kosong</td></tr>` : list.map((s, i) => `<tr class="border-b transition-all hover:bg-slate-50"><td class="px-6 py-4 text-xs font-mono">${s.nisn || '-'}</td><td class="px-6 py-4 font-bold text-slate-700">${s.nama}</td><td class="px-6 py-4 text-xs">${s.jk}</td><td class="px-6 py-4 text-right flex justify-end gap-2"><button onclick="editSiswa(${i})" class="text-blue-500 p-2 transition-transform active:scale-90"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="deleteSiswa(${i})" class="text-rose-400 p-2 transition-transform active:scale-90"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join(''); initIcons(); }
+        function renderKKTPList() { const items = state.kktpDefinitions[state.activeClass] || []; document.getElementById('kktp-list-container').innerHTML = items.length === 0 ? `<div class="col-span-full py-20 text-center text-slate-300">Kosong</div>` : items.map((k, i) => `<div class="bg-white p-8 rounded-[2rem] border-2 relative group shadow-sm transition-all hover:border-blue-200"><div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 flex gap-1"><button onclick="editKKTP('${k.id}')" class="text-blue-500 p-2 transition-transform active:scale-90"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="deleteKKTP(${i})" class="text-rose-400 p-2 transition-transform active:scale-90"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div><p class="text-[9px] font-black text-slate-400 uppercase mb-2">${k.tipe} / ${k.target}</p><h5 class="font-bold text-sm text-slate-800 leading-snug">${k.materi}</h5></div>`).join(''); initIcons(); }
         function renderRaporTable() {
             const siswas = state.dataSiswa[state.activeClass] || [];
             const tests = state.sumatif[state.activeClass] || [];
@@ -701,7 +687,7 @@
             const cont = document.getElementById(`${type}-records`);
             if(!cont) return;
             const items = state[type][state.activeClass] || [];
-            cont.innerHTML = items.length === 0 ? `<div class="col-span-full py-10 text-center italic text-slate-300">Kosong</div>` : items.map((it, i) => `<div class="bg-white p-6 rounded-[2rem] border-2 relative group shadow-sm transition-all hover:border-blue-200"><button onclick="deleteRecord('${type}', ${i})" class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 text-rose-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button><p class="text-[9px] font-black text-slate-400 mb-1 uppercase">${it.date}</p><h5 class="font-bold text-xs text-slate-700">${it.materi}</h5></div>`).join('');
+            cont.innerHTML = items.length === 0 ? `<div class="col-span-full py-10 text-center italic text-slate-300">Belum ada riwayat</div>` : items.map((it, i) => `<div class="bg-white p-6 rounded-[2rem] border-2 relative group shadow-sm transition-all hover:border-blue-200"><button onclick="deleteRecord('${type}', ${i})" class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 text-rose-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button><p class="text-[9px] font-black text-slate-400 mb-1 uppercase">${it.date}</p><h5 class="font-bold text-xs text-slate-700 leading-relaxed">${it.materi}</h5></div>`).join('');
             initIcons();
         }
 
@@ -725,12 +711,15 @@
             const k = state.kktpDefinitions[state.activeClass].find(d => d.id === document.getElementById('p-kktp-select').value);
             const siswas = state.dataSiswa[state.activeClass] || [];
             if (!k) return;
-            document.getElementById('p-siswa-list').innerHTML = siswas.map(s => {
+            const listBody = document.getElementById('p-siswa-list');
+            if(!listBody) return;
+            
+            listBody.innerHTML = siswas.map(s => {
                 let inputHtml = "";
                 if(k.tipe === 'rubrik') {
                     inputHtml = `<div class="space-y-4">` + k.data.map((c, i) => `
                         <div class="criteria-block border-b-2 border-slate-50 pb-4 mb-2" data-idx="${i}">
-                            <p class="text-[10px] font-bold text-slate-800 mb-3 bg-slate-100 p-2 rounded-lg">${c.text}</p>
+                            <p class="text-[10px] font-bold text-slate-800 mb-3 bg-slate-100 p-2 rounded-lg leading-tight">${c.text}</p>
                             <div class="flex flex-col gap-2">` + 
                             (k.levels || ["B", "C", "M"]).map((lvlName, lIdx) => {
                                 const score = Math.round(((lIdx + 1) / (k.levels ? k.levels.length : 3)) * 100);
