@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buku Penilaian Guru PJOK - Professional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Library untuk DOCX -->
+    <script src="https://unpkg.com/docx@7.1.0/build/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .tab-active { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: 700; }
+        .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 2000; align-items: center; justify-content: center; flex-direction: column; }
+        .glass-panel { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .wizard-step-active { background-color: #2563eb; color: white; transform: scale(1.1); }
+        .chart-container { position: relative; height: 220px; width: 100%; }
+        @media print { .no-print { display: none !important; } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        
+        .r-btn { transition: all 0.2s; text-align: left; }
+        .r-btn:hover { border-color: #3b82f6; background-color: #eff6ff; }
+        .r-btn.active-grade { background-color: #2563eb !important; color: white !important; border-color: #1e40af !important; }
+        .r-btn.active-grade .desc-text { color: #bfdbfe !important; }
+    </style>
+</head>
+<body class="text-slate-900 bg-cover bg-center bg-fixed transition-all duration-500">
+    <div id="loading" class="loading-overlay">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-2"></div>
+        <p class="text-sm font-bold text-slate-700">Memproses Data...</p>
+    </div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="fixed inset-0 z-[1500] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md">
+        <div class="bg-white w-full max-w-md p-10 rounded-[3rem] shadow-2xl text-center border border-white/50">
+            <!-- LOGO LOGIN: Kotak Dibuat Transparan (bg-transparent, tanpa border/shadow) -->
+            <div class="mx-auto mb-6 w-32 h-32 bg-transparent flex items-center justify-center overflow-hidden">
+                <img src="https://github.com/racketboys-pe/abseneskulbola/blob/main/Copy%20of%20RAPAT%20SEKOLAH%20SEMESTER%202%20(1).png?raw=true" alt="Logo Login" id="loginLogoImg" class="w-full h-full object-contain" onerror="this.src='https://ui-avatars.com/api/?name=PJOK&background=fff&color=2563eb'">
+            </div>
+            
+            <h2 class="text-2xl font-black text-slate-800 mb-2">Login PJOK Pro</h2>
+            <p class="text-slate-400 text-sm mb-8 italic">Silahkan masukkan kredensial Anda</p>
+            <div class="space-y-4 mb-8">
+                <input id="loginUser" type="text" placeholder="Username" class="w-full p-4 rounded-2xl border-2 outline-none focus:border-blue-500 font-medium bg-slate-50">
+                <input id="loginPass" type="password" placeholder="Password" class="w-full p-4 rounded-2xl border-2 outline-none focus:border-blue-500 font-medium bg-slate-50">
+            </div>
+            <button onclick="handleLogin()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg hover:bg-blue-700 transition-all transform active:scale-95">Masuk Aplikasi</button>
+        </div>
+    </div>
+
+    <!-- UI MESSAGE BOX -->
+    <div id="messageBox" class="hidden fixed inset-0 bg-black/50 z-[3000] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center">
+            <h4 id="msgTitle" class="text-lg font-bold mb-2 text-slate-800">Pesan</h4>
+            <p id="msgBody" class="text-slate-500 text-sm mb-6"></p>
+            <button onclick="closeModal('messageBox')" class="w-full py-3 bg-blue-600 text-white rounded-2xl font-bold">Oke</button>
+        </div>
+    </div>
+
+    <!-- CONFIRMATION MODAL -->
+    <div id="confirmModal" class="hidden fixed inset-0 bg-black/50 z-[3000] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center border border-slate-100">
+            <h4 id="confirmTitle" class="text-xl font-black mb-2 text-slate-800">Konfirmasi</h4>
+            <p id="confirmBody" class="text-slate-500 text-sm mb-8"></p>
+            <div class="grid grid-cols-2 gap-3">
+                <button id="confirmCancelBtn" class="py-3 bg-slate-100 rounded-2xl font-bold text-slate-600">Batal</button>
+                <button id="confirmOkBtn" class="py-3 bg-rose-600 text-white rounded-2xl font-bold">Lanjut</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP CONTAINER -->
+    <div id="appContainer" class="hidden max-w-6xl mx-auto p-4 md:p-6 relative">
+        <header class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 no-print">
+            <div class="flex items-center gap-4">
+                <!-- LOGO HEADER: Kotak Dibuat Transparan (bg-transparent, tanpa border/shadow) -->
+                <div class="w-16 h-16 bg-transparent flex items-center justify-center overflow-hidden">
+                    <img src="https://github.com/racketboys-pe/abseneskulbola/blob/main/Copy%20of%20RAPAT%20SEKOLAH%20SEMESTER%202%20(1).png?raw=true" alt="Logo Header" id="headerLogoImg" class="w-full h-full object-contain" onerror="this.src='https://ui-avatars.com/api/?name=PJOK&background=fff&color=2563eb'">
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black text-slate-800 tracking-tight" id="appTitle">Buku Penilaian PJOK</h1>
+                    <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest" id="header-school">SDN ...</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="cloudSync('POST', state)" class="px-4 py-2 rounded-xl bg-green-600 text-white text-[10px] font-bold uppercase shadow-md hover:bg-green-700 transition-all"><i data-lucide="upload-cloud" class="w-3 h-3 inline mr-1"></i> Sync</button>
+                <button onclick="offloadDatabase()" class="px-4 py-2 rounded-xl bg-blue-600 text-white text-[10px] font-bold uppercase shadow-md hover:bg-blue-700 transition-all"><i data-lucide="layout-grid" class="w-3 h-3 inline mr-1"></i> Offload</button>
+                <button onclick="openModal('modalSettings')" class="p-2 bg-white rounded-xl border hover:bg-slate-50" title="Pengaturan & Identitas"><i data-lucide="settings" class="w-4 h-4"></i></button>
+                <button onclick="handleLogout()" class="p-2 bg-rose-50 text-rose-500 rounded-xl border border-rose-100 hover:bg-rose-100"><i data-lucide="log-out" class="w-4 h-4"></i></button>
+                <select id="activeClassSelect" onchange="changeClass(this.value)" class="p-2 rounded-xl bg-white border font-bold text-sm text-blue-600 outline-none"></select>
+            </div>
+        </header>
+
+        <nav class="flex overflow-x-auto no-scrollbar border-b border-slate-200 mb-8 gap-8 text-sm font-medium text-slate-500 no-print">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="pb-3 px-1 transition-all whitespace-nowrap font-bold">Dashboard</button>
+            <button onclick="switchTab('siswa')" id="nav-siswa" class="pb-3 px-1 transition-all whitespace-nowrap font-bold text-slate-500">Siswa</button>
+            <button onclick="switchTab('kktp')" id="nav-kktp" class="pb-3 px-1 transition-all whitespace-nowrap font-bold text-slate-500">KKTP Wizard</button>
+            <button onclick="switchTab('formatif')" id="nav-formatif" class="pb-3 px-1 transition-all whitespace-nowrap font-bold text-slate-500">Formatif</button>
+            <button onclick="switchTab('sumatif')" id="nav-sumatif" class="pb-3 px-1 transition-all whitespace-nowrap font-bold text-slate-500">Sumatif</button>
+            <button onclick="switchTab('rapor')" id="nav-rapor" class="pb-3 px-1 transition-all whitespace-nowrap font-bold text-slate-500">Rekap Nilai</button>
+        </nav>
+
+        <main id="mainContent">
+            <!-- DASHBOARD -->
+            <section id="content-dashboard" class="space-y-6 no-print">
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <div class="p-4 rounded-3xl glass-panel shadow-sm border-l-4 border-l-blue-600">
+                        <p class="text-slate-400 text-[9px] font-black uppercase mb-1">Siswa</p>
+                        <h3 class="text-2xl font-black text-slate-800" id="stat-total-siswa">0</h3>
+                    </div>
+                    <div class="p-4 rounded-3xl glass-panel shadow-sm border-l-4 border-l-green-600">
+                        <p class="text-slate-400 text-[9px] font-black uppercase mb-1">Mean (Avg)</p>
+                        <h3 class="text-2xl font-black text-green-600" id="stat-avg-kelas">0</h3>
+                    </div>
+                    <div class="p-4 rounded-3xl glass-panel shadow-sm border-l-4 border-l-purple-600">
+                        <p class="text-slate-400 text-[9px] font-black uppercase mb-1">Tertinggi</p>
+                        <h3 class="text-2xl font-black text-purple-600" id="stat-max-score">0</h3>
+                    </div>
+                    <div class="p-4 rounded-3xl glass-panel shadow-sm border-l-4 border-l-rose-600">
+                        <p class="text-slate-400 text-[9px] font-black uppercase mb-1">Terendah</p>
+                        <h3 class="text-2xl font-black text-rose-600" id="stat-min-score">0</h3>
+                    </div>
+                    <div class="p-4 rounded-3xl glass-panel shadow-sm border-l-4 border-l-amber-500">
+                        <p class="text-slate-400 text-[9px] font-black uppercase mb-1">Sync</p>
+                        <div id="cloudIndicator" class="w-3 h-3 rounded-full bg-slate-300 inline-block"></div>
+                        <span id="cloudStatusText" class="text-[9px] font-bold uppercase ml-1">Checking</span>
+                    </div>
+                    <div class="p-4 rounded-3xl glass-panel shadow-sm border-l-4 border-l-slate-800">
+                        <button onclick="switchTab('rapor')" class="w-full h-full text-[9px] font-black uppercase text-slate-800 hover:text-blue-600 transition-colors">Lihat Rekap <i data-lucide="arrow-right" class="w-3 h-3 inline"></i></button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="p-8 rounded-[2.5rem] glass-panel shadow-sm border">
+                        <h4 class="text-xs font-bold text-slate-800 mb-6 flex items-center gap-2 uppercase tracking-wider"><i data-lucide="users" class="w-4 h-4 text-blue-600"></i> Komposisi Gender</h4>
+                        <div class="chart-container"><canvas id="chartGender"></canvas></div>
+                    </div>
+                    <div class="p-8 rounded-[2.5rem] glass-panel shadow-sm border">
+                        <h4 class="text-xs font-bold text-slate-800 mb-6 flex items-center gap-2 uppercase tracking-wider"><i data-lucide="bar-chart-3" class="w-4 h-4 text-green-600"></i> Rata-rata Per Sumatif</h4>
+                        <div class="chart-container"><canvas id="chartSumatif"></canvas></div>
+                    </div>
+                    <div class="p-8 rounded-[2.5rem] glass-panel shadow-sm border">
+                        <h4 class="text-xs font-bold text-slate-800 mb-6 flex items-center gap-2 uppercase tracking-wider"><i data-lucide="trending-up" class="w-4 h-4 text-purple-600"></i> Ikhtisar Capaian Kelas</h4>
+                        <div class="chart-container"><canvas id="chartClassStats"></canvas></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SISWA -->
+            <section id="content-siswa" class="hidden space-y-4 no-print">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-extrabold text-slate-800">Manajemen Siswa</h2>
+                    <button onclick="initAddSiswa()" class="bg-blue-600 text-white px-6 py-2 rounded-xl text-sm font-black shadow-lg hover:bg-blue-700">+ Siswa</button>
+                </div>
+                <div class="glass-panel rounded-[2rem] overflow-hidden border shadow-sm">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50/50 border-b font-black text-slate-400 text-[10px] uppercase">
+                            <tr><th class="px-6 py-4">NISN</th><th class="px-6 py-4">Nama Lengkap</th><th class="px-6 py-4">L/P</th><th class="px-6 py-4 text-right">Aksi</th></tr>
+                        </thead>
+                        <tbody id="list-siswa-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- KKTP WIZARD -->
+            <section id="content-kktp" class="hidden space-y-4 no-print">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-extrabold text-slate-800">Daftar Instrumen KKTP</h2>
+                    <button onclick="openKKTPWizard()" class="bg-blue-600 text-white px-6 py-2 rounded-xl text-sm font-black shadow-lg hover:bg-blue-700">+ Buat KKTP Baru</button>
+                </div>
+                <div id="kktp-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+
+            <!-- FORMATIF & SUMATIF -->
+            <section id="content-formatif" class="hidden space-y-4 no-print">
+                <div class="flex justify-between items-center"><h2 class="text-xl font-extrabold text-slate-800">Jurnal Formatif</h2><button onclick="initPenilaian('formatif')" class="bg-amber-500 text-white px-6 py-2 rounded-xl text-sm font-black shadow-lg">+ Input Nilai</button></div>
+                <div id="formatif-records" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+            <section id="content-sumatif" class="hidden space-y-4 no-print">
+                <div class="flex justify-between items-center"><h2 class="text-xl font-extrabold text-slate-800">Asesmen Sumatif</h2><button onclick="initPenilaian('sumatif')" class="bg-blue-600 text-white px-6 py-2 rounded-xl text-sm font-black shadow-lg">+ Input Nilai</button></div>
+                <div id="sumatif-records" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+
+            <!-- RAPOR -->
+            <section id="content-rapor" class="hidden space-y-6 no-print">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <h2 class="text-xl font-extrabold text-slate-800">Rekap Nilai Semester</h2>
+                    <div class="flex gap-2">
+                        <button onclick="exportToExcel()" class="bg-green-600 text-white px-4 py-2 rounded-xl text-[10px] font-bold shadow-md hover:bg-green-700 flex items-center gap-1"><i data-lucide="file-spreadsheet" class="w-3 h-3"></i> EXCEL</button>
+                        <button onclick="exportToPDF()" class="bg-rose-600 text-white px-4 py-2 rounded-xl text-[10px] font-bold shadow-md hover:bg-rose-700 flex items-center gap-1"><i data-lucide="file-text" class="w-3 h-3"></i> PDF</button>
+                    </div>
+                </div>
+                <div class="glass-panel rounded-[2rem] shadow-xl overflow-x-auto border">
+                    <table class="w-full text-left text-sm" id="table-rapor"></table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL: KKTP WIZARD -->
+    <div id="modalKKTPWizard" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[2000] flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-[3rem] w-full max-w-4xl p-8 md:p-12 shadow-2xl overflow-y-auto max-h-[90vh] relative custom-scrollbar">
+            <button onclick="closeModal('modalKKTPWizard')" class="absolute top-8 right-8 text-slate-300 hover:text-slate-600"><i data-lucide="x-circle"></i></button>
+            
+            <!-- Wizards Progress Bar -->
+            <div class="flex justify-between mb-12 max-w-xl mx-auto relative px-4">
+                <div class="absolute top-1/2 left-0 w-full h-1 bg-slate-100 -z-10 transform -translate-y-1/2"></div>
+                <div id="wiz-step-indicator-1" class="w-10 h-10 rounded-full flex items-center justify-center font-black text-sm wizard-step-active">1</div>
+                <div id="wiz-step-indicator-2" class="w-10 h-10 rounded-full flex items-center justify-center font-black text-sm wizard-step-inactive">2</div>
+                <div id="wiz-step-indicator-3" class="w-10 h-10 rounded-full flex items-center justify-center font-black text-sm wizard-step-inactive">3</div>
+                <div id="wiz-step-indicator-4" class="w-10 h-10 rounded-full flex items-center justify-center font-black text-sm wizard-step-inactive">4</div>
+            </div>
+
+            <div id="wizard-step-1" class="space-y-6">
+                <h3 class="text-2xl font-black text-slate-800">Langkah 1: Pengaturan Belajar</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50 p-8 rounded-3xl border-2 border-slate-100">
+                    <div><label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Fase</label><select id="wiz-fase" class="w-full p-4 bg-white rounded-2xl border-2 outline-none text-sm font-bold"><option value="A">Fase A (Kls 1-2)</option><option value="B">Fase B (Kls 3-4)</option><option value="C">Fase C (Kls 5-6)</option></select></div>
+                    <div><label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Kelas</label><input id="wiz-kelas" type="text" placeholder="Misal: 1A" class="w-full p-4 bg-white rounded-2xl border-2 outline-none text-sm font-bold"></div>
+                    <div><label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Semester</label><select id="wiz-semester" class="w-full p-4 bg-white rounded-2xl border-2 outline-none text-sm font-bold"><option value="1">1 (Ganjil)</option><option value="2">2 (Genap)</option></select></div>
+                </div>
+            </div>
+
+            <div id="wizard-step-2" class="hidden space-y-6">
+                <h3 class="text-2xl font-black text-slate-800">Langkah 2: Tujuan Pembelajaran</h3>
+                <div class="space-y-4">
+                    <div><label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Capaian Pembelajaran (CP)</label><textarea id="wiz-cp" rows="2" class="w-full p-4 bg-slate-50 rounded-2xl border-2 outline-none text-sm"></textarea></div>
+                    <div><label class="block text-[10px] font-black text-slate-400 uppercase mb-2 text-blue-600 font-black">Tujuan Pembelajaran (TP)</label><textarea id="wiz-tp" rows="2" class="w-full p-4 bg-white rounded-2xl border-2 border-blue-100 outline-none text-sm font-medium" placeholder="Mempraktikkan gerak dasar..."></textarea></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Pendekatan</label><select id="wiz-pendekatan" onchange="togglePendekatanUI()" class="w-full p-4 bg-slate-50 rounded-2xl border-2 outline-none text-sm font-bold"><option value="rubrik">Rubrik Kompetensi</option><option value="deskripsi">Deskripsi Kriteria</option><option value="interval">Interval Nilai</option></select></div>
+                        <div><label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Target</label><select id="wiz-target" class="w-full p-4 bg-slate-50 rounded-2xl border-2 outline-none text-sm font-bold"><option value="formatif">Formatif</option><option value="sumatif">Sumatif</option></select></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="wizard-step-3" class="hidden space-y-6">
+                <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
+                    <h3 class="text-2xl font-black text-slate-800">Langkah 3: Susun Kriteria</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="generateAIKKTPWizard()" id="btn-ai-wiz" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] font-black flex items-center gap-2 hover:bg-black transition-all active:scale-95"><i data-lucide="sparkles" class="w-3 h-3"></i> AI SUGGEST</button>
+                        <div id="rubric-adder" class="flex gap-2 hidden">
+                            <input type="text" id="new-level-name" placeholder="Tingkatan..." class="p-2 border rounded-xl text-[10px] w-24 outline-none">
+                            <button onclick="addWizLevel()" class="bg-blue-600 text-white px-3 py-2 rounded-xl text-[10px] font-black">TAMBAH</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="wiz-level-manager" class="hidden p-4 bg-blue-50 rounded-2xl border-2 border-blue-100 mb-6"><div id="wiz-level-list" class="flex flex-wrap gap-2"></div></div>
+                <div id="wiz-criteria-container" class="space-y-4 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar"></div>
+                <button onclick="addWizCriteriaRow()" class="w-full py-3 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold text-xs">+ Tambah Baris</button>
+            </div>
+
+            <div id="wizard-step-4" class="hidden space-y-6">
+                <h3 class="text-2xl font-black text-slate-800">Langkah 4: Tinjauan Akhir</h3>
+                <div id="wiz-preview-content" class="bg-slate-50 p-10 rounded-[2.5rem] border border-slate-200 text-xs overflow-y-auto max-h-[45vh] shadow-inner mb-6"></div>
+                <div class="flex flex-wrap gap-3 justify-center">
+                    <button onclick="downloadKKTPFromPreview('pdf')" class="px-6 py-3 bg-rose-600 text-white rounded-2xl font-black text-xs shadow-lg flex items-center gap-2 hover:bg-rose-700"><i data-lucide="file-text" class="w-4 h-4"></i> UNDUH PDF (A4)</button>
+                    <button onclick="downloadKKTPFromPreview('docx')" class="px-6 py-3 bg-blue-700 text-white rounded-2xl font-black text-xs shadow-lg flex items-center gap-2 hover:bg-blue-800"><i data-lucide="file-type" class="w-4 h-4"></i> UNDUH DOCX</button>
+                </div>
+            </div>
+
+            <div class="mt-10 flex justify-between gap-4">
+                <button id="wiz-btn-prev" onclick="moveWizard(-1)" class="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black">KEMBALI</button>
+                <button id="wiz-btn-next" onclick="moveWizard(1)" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg">SIMPAN KKTP</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SETTINGS -->
+    <div id="modalSettings" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[2000] flex items-center justify-center p-4">
+        <div class="bg-white rounded-[3rem] w-full max-w-3xl p-10 shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar">
+            <h3 class="text-2xl font-black mb-8 text-blue-600">Pengaturan & Identitas</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="col-span-1 md:col-span-2"><label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Nama Sekolah</label><input id="set-sekolah" type="text" class="w-full p-4 bg-slate-50 border-2 rounded-2xl text-sm outline-none font-bold"></div>
+                <div><label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Guru PJOK</label><input id="set-guru" type="text" class="w-full p-3 bg-slate-50 border-2 rounded-xl text-sm outline-none"></div>
+                <div><label class="block text-[10px] font-black text-slate-400 uppercase mb-2">NIP Guru</label><input id="set-nip-guru" type="text" class="w-full p-3 bg-slate-50 border-2 rounded-xl text-sm outline-none"></div>
+                <div><label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Kepala Sekolah</label><input id="set-ks" type="text" class="w-full p-3 bg-slate-50 border-2 rounded-xl text-sm outline-none"></div>
+                <div><label class="block text-[10px] font-black text-slate-400 uppercase mb-2">NIP KS</label><input id="set-nip-ks" type="text" class="w-full p-3 bg-slate-50 border-2 rounded-xl text-sm outline-none"></div>
+                <div class="col-span-1 md:col-span-2"><label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Wallpaper (URL)</label><input id="setBgUrl" type="text" class="w-full p-3 bg-slate-50 border-2 rounded-xl text-sm outline-none"></div>
+                <div class="col-span-1 md:col-span-2"><label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Logo Login (URL)</label><input id="setLogoLoginUrl" type="text" class="w-full p-3 bg-slate-50 border-2 rounded-xl text-sm outline-none"></div>
+                <div class="col-span-1 md:col-span-2"><label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Logo Header (URL)</label><input id="setLogoHeaderUrl" type="text" class="w-full p-3 bg-slate-50 border-2 rounded-xl text-sm outline-none"></div>
+            </div>
+            <div class="bg-blue-50 p-8 rounded-[2.5rem] border-2 border-blue-100 mb-8">
+                <label class="block text-[10px] font-black text-blue-600 uppercase mb-4">Ubah Akun</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input id="newLoginUser" type="text" placeholder="User Baru" class="w-full p-3 bg-white border-2 rounded-xl text-sm outline-none">
+                    <input id="newLoginPass" type="password" placeholder="Pass Baru" class="w-full p-3 bg-white border-2 rounded-xl text-sm outline-none">
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="closeModal('modalSettings')" class="px-6 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black">Batal</button>
+                <button onclick="applySettings()" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SISWA -->
+    <div id="modalSiswa" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[2000] flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl">
+            <h3 class="text-xl font-extrabold mb-6" id="modalSiswaTitle">Data Siswa</h3>
+            <div class="space-y-4">
+                <input id="input-nama" type="text" placeholder="Nama" class="w-full border-2 rounded-2xl p-4 text-sm outline-none bg-slate-50">
+                <input id="input-nisn" type="text" placeholder="NISN" class="w-full border-2 rounded-2xl p-4 text-sm outline-none bg-slate-50">
+                <select id="input-jk" class="w-full border-2 rounded-2xl p-4 text-sm outline-none bg-white"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select>
+                <button onclick="saveSiswa()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg">Simpan</button>
+                <button onclick="closeModal('modalSiswa')" class="w-full py-2 text-slate-400 text-xs font-bold uppercase text-center">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: PENILAIAN -->
+    <div id="modalPenilaian" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[2000] flex items-center justify-center p-4">
+        <div class="bg-white rounded-[3rem] w-full max-w-4xl p-10 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar border">
+            <div class="flex justify-between items-center mb-8"><h3 class="text-xl font-black">Asesmen <span id="p-type-label" class="text-blue-600 uppercase"></span></h3><button onclick="closeModal('modalPenilaian')"><i data-lucide="x" class="text-slate-300"></i></button></div>
+            <select id="p-kktp-select" onchange="syncKKTPToForm()" class="w-full p-4 border-2 rounded-2xl text-sm outline-none bg-slate-50 font-bold mb-6"></select>
+            <div class="overflow-hidden border rounded-3xl mb-8"><table class="w-full text-left text-sm"><thead class="bg-slate-50 border-b font-black text-slate-400 uppercase text-[10px]"><tr><th class="px-6 py-4">Siswa</th><th class="px-6 py-4">Capaian</th><th class="px-6 py-4">Catatan</th></tr></thead><tbody id="p-siswa-list"></tbody></table></div>
+            <button onclick="savePenilaian()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg">Simpan Nilai</button>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = ""; 
+        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbzsZHt8k7A_MJnpiVAmpv41Q4E4tFf_H3A6zjhHSYenkQjoBwmHHGnpNetovElSzMWb1A/exec"; 
+
+        let state = {
+            classes: ["Kelas 1A", "Kelas 1B", "Kelas 2A", "Kelas 2B", "Kelas 3A", "Kelas 3B", "Kelas 4A", "Kelas 4B", "Kelas 5A", "Kelas 5B", "Kelas 6A", "Kelas 6B"],
+            activeClass: "Kelas 1A",
+            currentTab: 'dashboard',
+            dataSiswa: {}, formatif: {}, sumatif: {}, kktpDefinitions: {},
+            settings: { bgUrl: '', logoLogin: '', logoHeader: '', title: 'Buku Penilaian PJOK', identity: { sekolah: '', guru: '', nip: '', ks: '', nipks: '' } },
+            auth: { user: 'admin', pass: '12345' }
+        };
+
+        let charts = { gender: null, sumatif: null, classStats: null };
+        let currentWizStep = 1;
+        let currentWizLevels = ["Berkembang", "Cakap", "Mahir"];
+        let isSyncing = false;
+        let currentType = null;
+        let currentEditSiswaIdx = null;
+        let currentEditKKTPId = null;
+        const LOCAL_KEY = 'pjok_v28_final_docx_pdf';
+
+        function initIcons() { if (typeof lucide !== 'undefined') lucide.createIcons(); }
+
+        // --- AUTH ---
+        function handleLogin() {
+            const u = document.getElementById('loginUser').value;
+            const p = document.getElementById('loginPass').value;
+            if (u === state.auth.user && p === state.auth.pass) {
+                sessionStorage.setItem('pjok_active', 'true');
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appContainer').classList.remove('hidden');
+                renderApp(); switchTab('dashboard'); 
+            } else {
+                showMessage("Akses Ditolak", "Username atau Password salah.");
+            }
+        }
+
+        function handleLogout() {
+            showConfirm("Logout", "Apakah Anda ingin keluar?", () => {
+                sessionStorage.clear();
+                window.location.href = window.location.href.split('#')[0];
+            });
+        }
+
+        // --- DASHBOARD ---
+        function updateDashboardCharts() {
+            const cls = state.activeClass;
+            const siswas = state.dataSiswa[cls] || [];
+            const male = siswas.filter(s => s.jk === 'L').length;
+            const female = siswas.filter(s => s.jk === 'P').length;
+
+            if (charts.gender) charts.gender.destroy();
+            const ctxG = document.getElementById('chartGender').getContext('2d');
+            charts.gender = new Chart(ctxG, { type: 'doughnut', data: { labels: ['L', 'P'], datasets: [{ data: [male, female], backgroundColor: ['#3b82f6', '#f43f5e'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%' } });
+
+            const tests = state.sumatif[cls] || [];
+            const labels = tests.map((t, i) => `AS ${i+1}`);
+            const avgs = tests.map(test => {
+                let sum = 0, count = 0;
+                for(let sid in test.scores) { sum += parseInt(test.scores[sid].val || 0); count++; }
+                return count > 0 ? Math.round(sum/count) : 0;
+            });
+
+            if (charts.sumatif) charts.sumatif.destroy();
+            const ctxS = document.getElementById('chartSumatif').getContext('2d');
+            charts.sumatif = new Chart(ctxS, { type: 'line', data: { labels: labels, datasets: [{ label: 'Nilai', data: avgs, borderColor: '#10b981', tension: 0.4, fill: true }] }, options: { responsive: true, maintainAspectRatio: false } });
+
+            let allScores = [];
+            tests.forEach(t => { for(let sid in t.scores) { const v = parseInt(t.scores[sid].val); if(!isNaN(v)) allScores.push(v); } });
+            const mean = allScores.length > 0 ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length) : 0;
+            const max = allScores.length > 0 ? Math.max(...allScores) : 0;
+            const min = allScores.length > 0 ? Math.min(...allScores) : 0;
+
+            if (charts.classStats) charts.classStats.destroy();
+            const ctxC = document.getElementById('chartClassStats').getContext('2d');
+            charts.classStats = new Chart(ctxC, { type: 'bar', data: { labels: ['Mean', 'Max', 'Min'], datasets: [{ data: [mean, max, min], backgroundColor: ['#10b981', '#8b5cf6', '#f43f5e'], borderRadius: 10 }] }, options: { responsive: true, maintainAspectRatio: false } });
+            
+            document.getElementById('stat-avg-kelas').innerText = mean;
+            document.getElementById('stat-max-score').innerText = max;
+            document.getElementById('stat-min-score').innerText = min;
+        }
+
+        function calculateDashboardStats() {
+            const cls = state.activeClass;
+            const siswas = state.dataSiswa[cls] || [];
+            document.getElementById('stat-total-siswa').innerText = siswas.length;
+            updateDashboardCharts();
+        }
+
+        // --- KKTP WIZARD ---
+        function openKKTPWizard() {
+            currentKKTPId = null; currentWizStep = 1; currentWizLevels = ["Berkembang", "Cakap", "Mahir"];
+            document.getElementById('wiz-tp').value = ""; document.getElementById('wiz-cp').value = "";
+            document.getElementById('wiz-kelas').value = state.activeClass.split(' ')[1] || "";
+            document.getElementById('wiz-criteria-container').innerHTML = "";
+            addWizCriteriaRow(); updateWizardUI(); openModal('modalKKTPWizard');
+        }
+
+        function editKKTP(id) {
+            const k = state.kktpDefinitions[state.activeClass].find(d => d.id === id);
+            if (!k) return;
+            currentKKTPId = id; currentWizStep = 1; currentWizLevels = k.levels && k.levels.length > 0 ? [...k.levels] : ["Berkembang", "Cakap", "Mahir"];
+            document.getElementById('wiz-tp').value = k.tp; document.getElementById('wiz-cp').value = k.cp || "";
+            document.getElementById('wiz-kelas').value = k.meta?.kelas || ""; document.getElementById('wiz-fase').value = k.meta?.fase || "A"; document.getElementById('wiz-semester').value = k.meta?.semester || "1";
+            document.getElementById('wiz-pendekatan').value = k.tipe; document.getElementById('wiz-target').value = k.target;
+            document.getElementById('wiz-criteria-container').innerHTML = "";
+            k.data.forEach(item => addWizCriteriaRow(item.text, item.levels || { desc: item.desc }));
+            updateWizardUI(); openModal('modalKKTPWizard');
+        }
+
+        function updateWizardUI() {
+            for(let i=1; i<=4; i++) {
+                const el = document.getElementById(`wizard-step-${i}`);
+                const ind = document.getElementById(`wiz-step-indicator-${i}`);
+                if(el) el.classList.add('hidden');
+                if(ind) ind.className = `w-10 h-10 rounded-full flex items-center justify-center font-black text-sm ${i === currentWizStep ? 'wizard-step-active' : 'wizard-step-inactive'}`;
+            }
+            document.getElementById(`wizard-step-${currentWizStep}`).classList.remove('hidden');
+            document.getElementById('wiz-btn-prev').disabled = (currentWizStep === 1);
+            document.getElementById('wiz-btn-next').innerText = (currentWizStep === 4) ? "SIMPAN KKTP" : "LANJUTKAN";
+            
+            const pnd = document.getElementById('wiz-pendekatan').value;
+            if (pnd === 'rubrik' && currentWizStep === 3) {
+                document.getElementById('wiz-level-manager').classList.remove('hidden');
+                document.getElementById('rubric-adder').classList.remove('hidden');
+                renderWizLevelList();
+            } else {
+                document.getElementById('wiz-level-manager').classList.add('hidden');
+                document.getElementById('rubric-adder').classList.add('hidden');
+            }
+            if(currentWizStep === 4) renderWizPreview();
+            initIcons();
+        }
+
+        function moveWizard(dir) {
+            if(currentWizStep === 4 && dir === 1) { saveKKTPFromWizard(); return; }
+            currentWizStep += dir; updateWizardUI();
+        }
+
+        function addWizLevel() {
+            const name = document.getElementById('new-level-name').value.trim();
+            if (name) { currentWizLevels.push(name); document.getElementById('new-level-name').value = ""; renderWizLevelList(); refreshCriteriaRows(); }
+        }
+
+        function removeWizLevel(index) {
+            if (currentWizLevels.length <= 1) return showMessage("Peringatan", "Minimal 1 tingkatan.");
+            currentWizLevels.splice(index, 1); renderWizLevelList(); refreshCriteriaRows();
+        }
+
+        function renderWizLevelList() {
+            const cont = document.getElementById('wiz-level-list');
+            cont.innerHTML = currentWizLevels.map((lvl, i) => `<div class="flex items-center gap-1 bg-white px-3 py-1 rounded-full border shadow-sm"><span class="text-[10px] font-bold text-blue-600">${lvl}</span><button onclick="removeWizLevel(${i})" class="text-rose-300"><i data-lucide="x" class="w-3 h-3"></i></button></div>`).join('');
+            initIcons();
+        }
+
+        function refreshCriteriaRows() {
+            const rows = Array.from(document.querySelectorAll('.wiz-row'));
+            const data = rows.map(r => {
+                const vals = {};
+                r.querySelectorAll('.lvl-desc').forEach(ta => vals[ta.getAttribute('data-lvl')] = ta.value);
+                if(r.querySelector('.r-desc')) vals.desc = r.querySelector('.r-desc').value;
+                return { text: r.querySelector('.wiz-crit-text').value, levels: vals };
+            });
+            document.getElementById('wiz-criteria-container').innerHTML = "";
+            data.forEach(d => addWizCriteriaRow(d.text, d.levels));
+        }
+
+        function addWizCriteriaRow(text = "", savedLevels = {}) {
+            const cont = document.getElementById('wiz-criteria-container');
+            const tipe = document.getElementById('wiz-pendekatan').value;
+            const div = document.createElement('div');
+            div.className = "p-6 bg-white rounded-3xl border-2 border-slate-100 relative wiz-row mb-4 shadow-sm";
+            let extra = "";
+            if(tipe === 'rubrik') {
+                const colCount = Math.min(currentWizLevels.length, 4);
+                extra = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${colCount} gap-2 mt-3">` + currentWizLevels.map(lvl => `<div class="flex flex-col gap-1"><span class="text-[8px] font-black text-slate-400 uppercase">${lvl}</span><textarea class="lvl-desc p-2 text-[9px] rounded-xl border h-14 bg-slate-50 outline-none" data-lvl="${lvl}" placeholder="Deskripsi...">${savedLevels[lvl] || ''}</textarea></div>`).join('') + `</div>`;
+            } else {
+                extra = `<input type="text" class="r-desc w-full p-3 text-[10px] rounded-xl border mt-2 bg-slate-50 outline-none" placeholder="Deskripsi..." value="${savedLevels.desc || ''}">`;
+            }
+            div.innerHTML = `<button onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-rose-300"><i data-lucide="x-circle" class="w-4 h-4"></i></button><input class="wiz-crit-text w-full p-2 border-b-2 border-slate-100 outline-none font-bold text-sm bg-transparent" value="${text}" placeholder="Indikator..."> ${extra}`;
+            cont.appendChild(div); initIcons();
+        }
+
+        async function generateAIKKTPWizard() {
+            const tp = document.getElementById('wiz-tp').value.trim();
+            const tipe = document.getElementById('wiz-pendekatan').value;
+            if(!tp) return showMessage("Pesan", "Isi TP terlebih dahulu.");
+            const btn = document.getElementById('btn-ai-wiz');
+            btn.disabled = true; btn.innerHTML = `MENYUSUN...`;
+            const prompt = `Ahli kurikulum PJOK SD. Buat 3 indikator KKTP untuk TP: "${tp}" dengan pendekatan: "${tipe}". Tingkat: [${currentWizLevels.join(", ")}]. Format JSON murni Array objek: [{"text": "Indikator", "levels": {"${currentWizLevels.join('": "...", "')}": "..."}}].`;
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, { method: 'POST', body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } }) });
+                const result = await res.json();
+                const d = JSON.parse(result.candidates[0].content.parts[0].text);
+                document.getElementById('wiz-criteria-container').innerHTML = "";
+                d.forEach(item => addWizCriteriaRow(item.text, item.levels || { desc: item.desc }));
+            } catch(e) { showMessage("AI Error", "Gagal menghubungi AI."); } finally { btn.disabled = false; btn.innerHTML = `<i data-lucide="sparkles" class="w-3 h-3"></i> AI SUGGEST`; initIcons(); }
+        }
+
+        function renderWizPreview() {
+            const cont = document.getElementById('wiz-preview-content');
+            const tp = document.getElementById('wiz-tp').value;
+            const rows = Array.from(document.querySelectorAll('.wiz-row'));
+            const pnd = document.getElementById('wiz-pendekatan').value;
+            let h = `<thead class="bg-slate-100"><tr><th class="p-2 border">Indikator</th>` + (pnd === 'rubrik' ? currentWizLevels.map(lvl => `<th class="p-2 border">${lvl}</th>`).join('') : `<th class="p-2 border">Detail</th>`) + `</tr></thead>`;
+            let b = rows.map(r => `<tr><td class="p-2 border font-bold">${r.querySelector('.wiz-crit-text').value}</td>` + (pnd === 'rubrik' ? currentWizLevels.map(lvl => `<td class="p-2 border text-[8px]">${r.querySelector(`textarea[data-lvl="${lvl}"]`)?.value || '-'}</td>`).join('') : `<td class="p-2 border text-[9px]">${r.querySelector('.r-desc')?.value || '-'}</td>`) + `</tr>`).join('');
+            cont.innerHTML = `<div class="mb-4 text-center border-b pb-4"><p class="font-bold text-sm uppercase text-slate-800">${tp || 'Tujuan Pembelajaran'}</p></div><table class="w-full border-collapse border border-slate-200">${tableHeader}<tbody>${tableBody}</tbody></table>`;
+        }
+
+        // --- DOWNLOAD FEATURES ---
+        function getWizDataForExport() {
+            const rows = Array.from(document.querySelectorAll('.wiz-row'));
+            const tipe = document.getElementById('wiz-pendekatan').value;
+            return {
+                tp: document.getElementById('wiz-tp').value,
+                cp: document.getElementById('wiz-cp').value,
+                tipe,
+                levels: currentWizLevels,
+                meta: { sekolah: state.settings.identity.sekolah, guru: state.settings.identity.guru, nip: state.settings.identity.nip, ks: state.settings.identity.ks, nipks: state.settings.identity.nipks, fase: document.getElementById('wiz-fase').value, semester: document.getElementById('wiz-semester').value, kelas: document.getElementById('wiz-kelas').value },
+                data: rows.map(r => ({ text: r.querySelector('.wiz-crit-text').value, levels: tipe === 'rubrik' ? currentWizLevels.reduce((acc, lvl) => { acc[lvl] = r.querySelector(`textarea[data-lvl="${lvl}"]`)?.value; return acc; }, {}) : { desc: r.querySelector('.r-desc')?.value } }))
+            };
+        }
+
+        async function downloadKKTPFromPreview(format) {
+            const kktp = getWizDataForExport();
+            if (format === 'pdf') exportKKTPToPDF(kktp);
+            else exportKKTPToDOCX(kktp);
+        }
+
+        function exportKKTPToPDF(kktp) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = doc.internal.pageSize.getWidth();
+
+            doc.setFontSize(14); doc.text("KRITERIA KETERCAPAIAN TUJUAN PEMBELAJARAN (KKTP)", pageWidth/2, 15, { align: 'center' });
+            doc.setFontSize(10);
+            doc.text(`Satuan Pendidikan: ${kktp.meta.sekolah}`, 15, 25);
+            doc.text(`Tujuan Pembelajaran: ${kktp.tp}`, 15, 30, { maxWidth: 180 });
+            doc.text(`Kelas / Fase / Smt: ${kktp.meta.kelas} / ${kktp.meta.fase} / ${kktp.meta.semester}`, 15, 45);
+
+            const tableHead = [["Indikator", ...(kktp.tipe === 'rubrik' ? kktp.levels : ["Kriteria"])]];
+            const tableBody = kktp.data.map(d => [d.text, ...(kktp.tipe === 'rubrik' ? kktp.levels.map(l => d.levels[l]) : [d.levels.desc])]);
+
+            doc.autoTable({ head: tableHead, body: tableBody, startY: 55, theme: 'grid', styles: { fontSize: 8 } });
+            
+            const lastY = doc.previousAutoTable.finalY + 20;
+            doc.text("Mengetahui,", 30, lastY); doc.text("Kepala Sekolah", 30, lastY+5); doc.text(kktp.meta.ks, 30, lastY+25);
+            doc.text("Guru PJOK", 150, lastY+5); doc.text(kktp.meta.guru, 150, lastY+25);
+            
+            doc.save(`KKTP_${kktp.meta.kelas}_${kktp.tp.substring(0,20)}.pdf`);
+        }
+
+        async function exportKKTPToDOCX(kktp) {
+            const { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, TextRun, AlignmentType, BorderStyle } = docx;
+            
+            const tableHeaderCells = [new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Indikator", bold: true })] })] })];
+            if(kktp.tipe === 'rubrik') kktp.levels.forEach(l => tableHeaderCells.push(new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: l, bold: true })] })] })));
+            else tableHeaderCells.push(new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Kriteria", bold: true })] })] }));
+
+            const tableRows = [new TableRow({ children: tableHeaderCells })];
+            kktp.data.forEach(d => {
+                const cells = [new TableCell({ children: [new Paragraph(d.text)] })];
+                if(kktp.tipe === 'rubrik') kktp.levels.forEach(l => cells.push(new TableCell({ children: [new Paragraph(d.levels[l])] })));
+                else cells.push(new TableCell({ children: [new Paragraph(d.levels.desc)] }));
+                tableRows.push(new TableRow({ children: cells }));
+            });
+
+            const doc = new Document({
+                sections: [{
+                    children: [
+                        new Paragraph({ children: [new TextRun({ text: "INSTRUMEN KKTP PJOK", bold: true, size: 28 })], alignment: AlignmentType.CENTER, spacing: { after: 200 } }),
+                        new Paragraph({ children: [new TextRun({ text: `Satuan Pendidikan: ${kktp.meta.sekolah}`, bold: true })] }),
+                        new Paragraph({ children: [new TextRun({ text: `Tujuan Pembelajaran: ${kktp.tp}` })], spacing: { after: 400 } }),
+                        new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows })
+                    ]
+                }]
+            });
+
+            Packer.toBlob(doc).then(blob => {
+                saveAs(blob, `KKTP_${kktp.meta.kelas}.docx`);
+            });
+        }
+
+        function saveKKTPFromWizard() {
+            const data = getWizDataForExport();
+            if(!state.kktpDefinitions[state.activeClass]) state.kktpDefinitions[state.activeClass] = [];
+            state.kktpDefinitions[state.activeClass].push({ ...data, id: currentKKTPId || 'k-'+Date.now(), materi: data.tp.substring(0,45)+"..." });
+            closeModal('modalKKTPWizard'); saveData(); renderCurrentTab();
+            showMessage("Berhasil", "KKTP telah diarsipkan.");
+        }
+
+        // --- SETTINGS ---
+        function applySettings() {
+            const nu = document.getElementById('newLoginUser').value.trim();
+            const np = document.getElementById('newLoginPass').value.trim();
+            if(nu) state.auth.user = nu; if(np) state.auth.pass = np;
+            state.settings.bgUrl = document.getElementById('setBgUrl').value;
+            state.settings.logoLogin = document.getElementById('setLogoLoginUrl').value;
+            state.settings.logoHeader = document.getElementById('setLogoHeaderUrl').value;
+            state.settings.identity = { sekolah: document.getElementById('set-sekolah').value, guru: document.getElementById('set-guru').value, nip: document.getElementById('set-nip-guru').value, ks: document.getElementById('set-ks').value, nipks: document.getElementById('set-nip-ks').value };
+            saveData(); updateUIVisuals(); closeModal('modalSettings');
+        }
+
+        function updateUIVisuals() {
+            const iden = state.settings.identity || {};
+            if(state.settings.bgUrl) document.body.style.backgroundImage = `url('${state.settings.bgUrl}')`;
+            if(state.settings.logoLogin) document.getElementById('loginLogoImg').src = state.settings.logoLogin;
+            if(state.settings.logoHeader) document.getElementById('headerLogoImg').src = state.settings.logoHeader;
+            document.getElementById('set-sekolah').value = iden.sekolah || "";
+            document.getElementById('set-guru').value = iden.guru || "";
+            document.getElementById('set-nip-guru').value = iden.nip || "";
+            document.getElementById('set-ks').value = iden.ks || "";
+            document.getElementById('set-nip-ks').value = iden.nipks || "";
+            if(document.getElementById('header-school')) document.getElementById('header-school').innerText = iden.sekolah || "SATUAN PENDIDIKAN";
+            initIcons();
+        }
+
+        // --- CORE OPS ---
+        function renderApp() {
+            const sel = document.getElementById('activeClassSelect');
+            if(sel) sel.innerHTML = state.classes.map(c => `<option value="${c}" ${c === state.activeClass ? 'selected' : ''}>${c}</option>`).join('');
+            document.querySelectorAll('.active-class-label').forEach(el => el.innerText = state.activeClass);
+            updateUIVisuals();
+        }
+        function changeClass(v) { state.activeClass = v; renderApp(); renderCurrentTab(); }
+        function saveData() { localStorage.setItem(LOCAL_KEY, JSON.stringify(state)); if(CLOUD_URL) cloudSync('POST', state); calculateDashboardStats(); }
+        async function cloudSync(action, data = null) {
+            if(!CLOUD_URL) return; isSyncing = true; document.getElementById('loading').style.display = 'flex';
+            try {
+                const res = await fetch(CLOUD_URL, { method: 'POST', body: JSON.stringify({ action, data }), mode: 'cors' });
+                const r = await res.json();
+                if (action === 'GET' && r.data) { state = r.data; renderApp(); setCloudStatus(true); } 
+                else if (r.status === 'success') setCloudStatus(true);
+            } catch(e){ setCloudStatus(false); } finally { isSyncing = false; document.getElementById('loading').style.display = 'none'; }
+        }
+        function offloadDatabase() { cloudSync('OFFLOAD', state); }
+        function openModal(id) { const el = document.getElementById(id); if(el) el.classList.remove('hidden'); }
+        function closeModal(id) { const el = document.getElementById(id); if(el) el.classList.add('hidden'); }
+        function showMessage(t, b) { document.getElementById('msgTitle').innerText = t; document.getElementById('msgBody').innerText = b; openModal('messageBox'); }
+        function showConfirm(t, b, ok) { document.getElementById('confirmTitle').innerText = t; document.getElementById('confirmBody').innerText = b; openModal('confirmModal'); document.getElementById('confirmOkBtn').onclick = () => { closeModal('confirmModal'); ok(); }; document.getElementById('confirmCancelBtn').onclick = () => closeModal('confirmModal'); }
+        function setCloudStatus(s) { const ind = document.getElementById('cloudIndicator'); if(ind) ind.className = `w-3 h-3 rounded-full ${s ? 'bg-green-500' : 'bg-rose-500'} inline-block`; }
+
+        function renderCurrentTab() {
+            const t = state.currentTab;
+            if(t === 'dashboard') calculateDashboardStats();
+            if(t === 'siswa') renderSiswaList();
+            if(t === 'kktp') renderKKTPList();
+            if(t === 'formatif' || t === 'sumatif') renderPenilaianRecords(t);
+            if(t === 'rapor') renderRaporTable();
+            initIcons();
+        }
+        function renderSiswaList() { const list = state.dataSiswa[state.activeClass] || []; document.getElementById('list-siswa-body').innerHTML = list.length === 0 ? `<tr><td colspan="4" class="p-10 text-center italic text-slate-300">Kosong</td></tr>` : list.map((s, i) => `<tr class="border-b transition-all hover:bg-slate-50"><td class="px-6 py-4 text-xs font-mono">${s.nisn || '-'}</td><td class="px-6 py-4 font-bold text-slate-700">${s.nama}</td><td class="px-6 py-4 text-xs">${s.jk}</td><td class="px-6 py-4 text-right flex justify-end gap-2"><button onclick="editSiswa(${i})" class="text-blue-500 p-2"><i data-lucide="edit-3"></i></button><button onclick="deleteSiswa(${i})" class="text-rose-400 p-2"><i data-lucide="trash-2"></i></button></td></tr>`).join(''); initIcons(); }
+        function renderKKTPList() { const items = state.kktpDefinitions[state.activeClass] || []; document.getElementById('kktp-list-container').innerHTML = items.length === 0 ? `<div class="col-span-full py-20 text-center text-slate-300">Kosong</div>` : items.map((k, i) => `<div class="bg-white p-8 rounded-[2rem] border-2 relative group shadow-sm transition-all hover:border-blue-200"><div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 flex gap-1"><button onclick="editKKTP('${k.id}')" class="text-blue-500 p-2"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="deleteKKTP(${i})" class="text-rose-400 p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div><p class="text-[9px] font-black text-slate-400 uppercase mb-2">${k.tipe} / ${k.target}</p><h5 class="font-bold text-sm text-slate-800">${k.materi}</h5></div>`).join(''); initIcons(); }
+        function renderRaporTable() {
+            const siswas = state.dataSiswa[state.activeClass] || [];
+            const tests = state.sumatif[state.activeClass] || [];
+            const table = document.getElementById('table-rapor');
+            if(!table) return;
+            let h = `<thead class="bg-slate-900 text-white font-bold"><tr><th class="px-6 py-5 text-left rounded-tl-3xl">Nama Siswa</th>` + tests.map((t, i) => `<th class="px-4 py-4 text-center text-[10px] bg-slate-800 border-x border-white/10">AS ${i+1}</th>`).join('') + `<th class="px-6 py-4 text-center bg-blue-600 rounded-tr-3xl">NA</th></tr></thead><tbody>`;
+            siswas.forEach(s => {
+                let sum=0, count=0;
+                h += `<tr class="hover:bg-slate-50 border-b"><td class="px-6 py-4 font-bold text-xs">${s.nama}</td>`;
+                tests.forEach(test => { const v = parseInt(test.scores[s.id]?.val); h += `<td class="px-4 py-4 text-center text-xs font-medium">${!isNaN(v)?v:'-'}</td>`; if(!isNaN(v)){ sum += v; count++; } });
+                h += `<td class="px-6 py-4 text-center font-black text-blue-600 text-base">${count>0?Math.round(sum/count):0}</td></tr>`;
+            });
+            table.innerHTML = h + `</tbody>`;
+        }
+
+        function exportToExcel() { const t = document.getElementById('table-rapor'); if(!t || t.rows.length < 2) return showMessage("Kosong", "Tidak ada data."); XLSX.writeFile(XLSX.utils.table_to_book(t), `Rekap_Nilai_PJOK_${state.activeClass}.xlsx`); }
+        async function exportToPDF() { const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4'); const iden = state.settings.identity || {}; doc.setFontSize(18); doc.text(`REKAPITULASI NILAI PJOK`, 148, 15, { align: 'center' }); doc.setFontSize(10); doc.text(`Sekolah: ${iden.sekolah}`, 20, 25); doc.text(`Guru: ${iden.guru}`, 20, 30); doc.text(`Kelas: ${state.activeClass}`, 20, 35); doc.autoTable({ html: '#table-rapor', startY: 45, theme: 'grid' }); doc.save(`Rekap_PJOK_${state.activeClass}.pdf`); }
+
+        function renderPenilaianRecords(type) {
+            const cont = document.getElementById(`${type}-records`);
+            if(!cont) return;
+            const items = state[type][state.activeClass] || [];
+            cont.innerHTML = items.length === 0 ? `<div class="col-span-full py-10 text-center italic text-slate-300">Kosong</div>` : items.map((it, i) => `<div class="bg-white p-6 rounded-[2rem] border-2 relative group shadow-sm transition-all hover:border-blue-200"><button onclick="deleteRecord('${type}', ${i})" class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 text-rose-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button><p class="text-[9px] font-black text-slate-400 mb-1 uppercase">${it.date}</p><h5 class="font-bold text-xs text-slate-700">${it.materi}</h5></div>`).join('');
+            initIcons();
+        }
+
+        function editSiswa(idx) { const s = state.dataSiswa[state.activeClass][idx]; currentEditSiswaIdx = idx; document.getElementById('modalSiswaTitle').innerText = "Edit Siswa"; document.getElementById('input-nama').value = s.nama; document.getElementById('input-nisn').value = s.nisn; document.getElementById('input-jk').value = s.jk; openModal('modalSiswa'); }
+        function initAddSiswa() { currentEditSiswaIdx = null; document.getElementById('modalSiswaTitle').innerText = "Input Siswa"; document.getElementById('input-nama').value = ""; document.getElementById('input-nisn').value = ""; openModal('modalSiswa'); }
+        function saveSiswa() { 
+            const n = document.getElementById('input-nama').value; if(!n) return; 
+            if(!state.dataSiswa[state.activeClass]) state.dataSiswa[state.activeClass] = []; 
+            const payload = { id: (currentEditSiswaIdx !== null) ? state.dataSiswa[state.activeClass][currentEditSiswaIdx].id : 's-'+Date.now(), nama: n, nisn: document.getElementById('input-nisn').value, jk: document.getElementById('input-jk').value };
+            if (currentEditSiswaIdx !== null) state.dataSiswa[state.activeClass][currentEditSiswaIdx] = payload;
+            else state.dataSiswa[state.activeClass].push(payload);
+            closeModal('modalSiswa'); saveData(); renderCurrentTab(); 
+        }
+
+        function deleteSiswa(i) { showConfirm("Hapus", "Hapus siswa?", () => { state.dataSiswa[state.activeClass].splice(i, 1); saveData(); renderCurrentTab(); }); }
+        function deleteKKTP(i) { showConfirm("Hapus", "Hapus KKTP?", () => { state.kktpDefinitions[state.activeClass].splice(i, 1); saveData(); renderCurrentTab(); }); }
+        function deleteRecord(type, i) { showConfirm("Hapus", "Hapus data?", () => { state[type][state.activeClass].splice(i, 1); saveData(); renderCurrentTab(); }); }
+        function initPenilaian(type) { currentType = type; const kktps = (state.kktpDefinitions[state.activeClass] || []).filter(k => k.target === type); if(kktps.length === 0) return showMessage("Gagal", "Buat KKTP dulu."); document.getElementById('p-type-label').innerText = type; document.getElementById('p-kktp-select').innerHTML = kktps.map(k => `<option value="${k.id}">${k.tp}</option>`).join(''); syncKKTPToForm(); openModal('modalPenilaian'); }
+
+        function syncKKTPToForm() {
+            const k = state.kktpDefinitions[state.activeClass].find(d => d.id === document.getElementById('p-kktp-select').value);
+            const siswas = state.dataSiswa[state.activeClass] || [];
+            if (!k) return;
+            document.getElementById('p-siswa-list').innerHTML = siswas.map(s => {
+                let inputHtml = "";
+                if(k.tipe === 'rubrik') {
+                    inputHtml = `<div class="space-y-4">` + k.data.map((c, i) => `
+                        <div class="criteria-block border-b-2 border-slate-50 pb-4 mb-2" data-idx="${i}">
+                            <p class="text-[10px] font-bold text-slate-800 mb-3 bg-slate-100 p-2 rounded-lg">${c.text}</p>
+                            <div class="flex flex-col gap-2">` + 
+                            (k.levels || ["B", "C", "M"]).map((lvlName, lIdx) => {
+                                const score = Math.round(((lIdx + 1) / (k.levels ? k.levels.length : 3)) * 100);
+                                const levelDesc = c.levels ? (c.levels[lvlName] || '---') : '---';
+                                return `<button onclick="setCritVal(this, ${score})" class="r-btn w-full p-3 text-left border rounded-2xl bg-white transition-all group">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="font-black text-[10px] uppercase text-blue-600">${lvlName}</span>
+                                        <span class="text-[9px] font-bold text-slate-300">Skor: ${score}</span>
+                                    </div>
+                                    <p class="desc-text text-[9px] leading-relaxed text-slate-500 italic">${levelDesc}</p>
+                                </button>`;
+                            }).join('') + 
+                            `</div>
+                        </div>
+                    `).join('') + `</div>`;
+                } else {
+                    inputHtml = `<input type="number" class="p-score w-full p-3 border-2 rounded-2xl text-xs font-black outline-none focus:border-blue-400" placeholder="0-100">`;
+                }
+                return `<tr data-sid="${s.id}" data-val="0" class="border-b transition-all hover:bg-slate-50/50"><td class="px-6 py-6 font-black text-xs bg-slate-50/30 text-slate-700 align-top">${s.nama}</td><td class="px-6 py-4">${inputHtml}</td><td class="px-6 py-4 align-top"><textarea class="p-note w-full p-3 border-2 rounded-2xl text-[9px] h-20 bg-slate-50/50 outline-none" placeholder="Catatan..."></textarea></td></tr>`;
+            }).join('');
+        }
+
+        function setCritVal(btn, v) {
+            const block = btn.closest('.criteria-block');
+            block.querySelectorAll('.r-btn').forEach(b => b.classList.remove('active-grade'));
+            btn.classList.add('active-grade');
+            block.setAttribute('data-v', v);
+            const tr = btn.closest('tr'); let sum=0, count=0;
+            tr.querySelectorAll('.criteria-block').forEach(b => { const val = parseInt(b.getAttribute('data-v')); if(!isNaN(val)){ sum += val; count++; } });
+            if(count>0) tr.setAttribute('data-val', Math.round(sum/count));
+        }
+
+        function savePenilaian() {
+            const k = state.kktpDefinitions[state.activeClass].find(d => d.id === document.getElementById('p-kktp-select').value);
+            const scores = {};
+            document.querySelectorAll('#p-siswa-list tr').forEach(tr => { const sid = tr.getAttribute('data-sid'); const val = tr.getAttribute('data-val') || tr.querySelector('.p-score')?.value || 0; scores[sid] = { val: parseInt(val), note: tr.querySelector('.p-note').value }; });
+            if(!state[currentType][state.activeClass]) state[currentType][state.activeClass] = [];
+            state[currentType][state.activeClass].push({ date: new Date().toLocaleDateString('id-ID'), materi: k.tp, kktpId: k.id, scores });
+            closeModal('modalPenilaian'); saveData(); renderCurrentTab();
+        }
+
+        function switchTab(t) {
+            state.currentTab = t;
+            ['dashboard', 'siswa', 'kktp', 'formatif', 'sumatif', 'rapor'].forEach(id => {
+                const el = document.getElementById(`content-${id}`);
+                if(el) el.classList.add('hidden');
+                const nav = document.getElementById(`nav-${id}`);
+                if(nav) nav.classList.remove('tab-active');
+            });
+            const activeEl = document.getElementById(`content-${t}`);
+            if(activeEl) activeEl.classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${t}`);
+            if(activeNav) activeNav.classList.add('tab-active');
+            renderCurrentTab();
+        }
+
+        window.onload = async () => {
+            const local = localStorage.getItem(LOCAL_KEY);
+            if(local) state = JSON.parse(local);
+            if(sessionStorage.getItem('pjok_active') === 'true') {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appContainer').classList.remove('hidden');
+                renderApp(); switchTab('dashboard');
+            }
+            if(CLOUD_URL) await cloudSync('GET');
+            initIcons();
+        };
+    </script>
+</body>
+</html>
